@@ -1,10 +1,11 @@
 import React, { useEffect, useState } from 'react';
 import * as PIXI from 'pixi.js';
-import { Sprite } from 'react-pixi-fiber';
-import spaceship from '../images/spaceship.png'
+import { Sprite, usePixiApp } from 'react-pixi-fiber';
+import { Rocket } from '../App'
+import spaceship from '../images/spaceship.png';
 
 interface SpaceshipProps{
-    position: any,
+    rockets: {rocketsList: any, setRocket: any};
 }
 
 export function Spaceship(props: SpaceshipProps) {
@@ -24,16 +25,24 @@ export function Spaceship(props: SpaceshipProps) {
 
     useEffect(() => {
         document.addEventListener("mousemove", handleMouse);
+        document.addEventListener("click", shoot);
     }, [])
-    
+
+    const shoot = (event: any) => {
+        event.stopPropagation();
+        event.preventDefault();
+        let shootedRocket: Rocket = {posX: event.clientX, posY: event.clientY}
+        let allRockets = props.rockets.rocketsList;
+        allRockets.push(shootedRocket);
+        props.rockets.setRocket(allRockets);
+    }
 
     return (
         <Sprite
             texture={PIXI.Texture.from(spaceship)}
             position={new PIXI.Point(mousePosition.x, mousePosition.y)}
-            anchor={new PIXI.Point(0.5, 0.5)} 
+            anchor={new PIXI.Point(0.5, 0.5)}
         >
-
         </Sprite>
     )
 }

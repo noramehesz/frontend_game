@@ -46,8 +46,12 @@ export function Background(props: BgProps) {
     const animation = () => {
         if (reqRef.current !== undefined) {
             let data: Array<{props: any, alpha: number}> = prevStar.current;
-            for(let i = 0; i < data.length; i++) {
-                data[i].alpha = getAplha(i);
+            for (let i = 0; i < data.length; i++) {
+                if (data[i].alpha < 0) {
+                    data[i].alpha = 1;
+                } else {
+                    data[i].alpha = data[i].alpha - 0.01;
+                }
             }
             setStarsArray(data);
             prevStar.current = data;
@@ -56,10 +60,10 @@ export function Background(props: BgProps) {
     }
 
     useEffect(() => {
-            reqRef.current = requestAnimationFrame(animation);
-            return () => {
-                cancelAnimationFrame(reqRef.current);
-            }
+        reqRef.current = requestAnimationFrame(animation);
+        return () => {
+            cancelAnimationFrame(reqRef.current);
+        }
     }, [])
 
     return (

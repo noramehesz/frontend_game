@@ -2,6 +2,7 @@ import React, { useState, useEffect, useRef, Fragment } from 'react';
 import './App.css';
 import { Sprite, Stage, Container, Text } from "react-pixi-fiber";
 import splash from './images/space.png';
+import rocket from './images/bullet.png';
 import * as PIXI from 'pixi.js';
 import { Background } from './bgAnimation';
 import { CustomButton } from './Button';
@@ -13,9 +14,15 @@ enum GameState {
   gameState = 'gameState',
 }
 
+export type Rocket = {
+  posX: number,
+  posY: number,
+}
+
 function App() {
   const [spalshImage, setSplashImage] = useState({alpha: 1, visible: true});
-  const [gameState, setGameState] = useState(GameState.splashState)
+  const [gameState, setGameState] = useState(GameState.splashState);
+  const [rockets, setRockets] = useState(new Array<Rocket>());
 
   const requestRef = useRef(0);
   const prevValueRef = useRef(1);
@@ -54,6 +61,11 @@ function App() {
     setGameState(GameState.gameState);
   }
 
+  const handleExit = () => {
+    window.location.replace("http://www.google.com");
+  }
+
+
   return (
     <Fragment>
       <Stage options={{width: 800, height: 600, backgroundColor: 0x02020F}} interactive={true}>
@@ -64,16 +76,23 @@ function App() {
         (
           <Container>
         <Background/>
-        <CustomButton text={"GAME1"} position={new PIXI.Point(400, 120)} onClick={handleGameButtonOnClick}/>
-        <CustomButton text={"GAME2"} position={new PIXI.Point(400, 240)}/>
-        <CustomButton text={"GAME3"} position={new PIXI.Point(400, 360)}/>
-        <CustomButton text={"EXIT"} position={new PIXI.Point(400, 480)}/>
+          <CustomButton text={"GAME1"} position={new PIXI.Point(400, 120)} onClick={handleGameButtonOnClick}/>
+          <CustomButton text={"GAME2"} position={new PIXI.Point(400, 240)} onClick={handleGameButtonOnClick}/>
+          <CustomButton text={"GAME3"} position={new PIXI.Point(400, 360)} onClick={handleGameButtonOnClick}/>
+          <CustomButton text={"EXIT"} position={new PIXI.Point(400, 480)} onClick={handleExit}/>
         </Container>
         )
         }
         {
           gameState === GameState.gameState &&
-          <Spaceship position={new PIXI.Point(100, 300)}/>
+          (
+          <Container>
+            <Spaceship rockets={{rocketsList: rockets, setRocket: setRockets}}/>
+            {rockets.map((item) => 
+              <Sprite texture={PIXI.Texture.from(rocket)} position={new PIXI.Point(item.posX, item.posY)}></Sprite>
+            )}
+          </Container>
+          )
         }
       </Stage>
     </Fragment>
