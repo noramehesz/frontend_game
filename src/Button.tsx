@@ -6,6 +6,7 @@ import button from './images/imageButton.png';
 interface ButtonPorps {
     position: any;
     text: string;
+    onClick?: () => void;
 }
 
 export function CustomButton(props: ButtonPorps) {
@@ -16,11 +17,15 @@ export function CustomButton(props: ButtonPorps) {
             buttonMode={true} 
             interactive={true} 
             position={props.position} 
-            anchor={new PIXI.Point(0.5, 0.5)}>
+            anchor={new PIXI.Point(0.5, 0.5)}
+            pointerdown={props.onClick}
+            pointerup={props.onClick}
+            mousedown={props.onClick}>
             <Text 
             text={props.text}
-            anchor={new PIXI.Point(0.5, 0.5)}>
-                
+            anchor={new PIXI.Point(0.5, 0.5)}
+            >
+
             </Text>
         </Sprite>
     )

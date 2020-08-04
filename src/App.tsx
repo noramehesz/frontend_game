@@ -1,10 +1,11 @@
 import React, { useState, useEffect, useRef, Fragment } from 'react';
 import './App.css';
-import { Sprite, Stage, Container } from "react-pixi-fiber";
+import { Sprite, Stage, Container, Text } from "react-pixi-fiber";
 import splash from './images/space.png';
 import * as PIXI from 'pixi.js';
 import { Background } from './bgAnimation';
 import { CustomButton } from './Button';
+import { Spaceship } from './gameItems/Spaceship';
 
 enum GameState {
   splashState = 'splashState',
@@ -50,13 +51,12 @@ function App() {
   }, [])
 
   const handleGameButtonOnClick = () => {
-    
+    setGameState(GameState.gameState);
   }
-
 
   return (
     <Fragment>
-      <Stage options={{width: 800, height: 600, backgroundColor: 0x02020F}}>
+      <Stage options={{width: 800, height: 600, backgroundColor: 0x02020F}} interactive={true}>
         { gameState === GameState.splashState &&
             <Sprite texture={PIXI.Texture.from(splash)} alpha={spalshImage.alpha} zIndex={100}></Sprite>
         }
@@ -64,12 +64,16 @@ function App() {
         (
           <Container>
         <Background/>
-        <CustomButton text={"GAME1"} position={new PIXI.Point(400, 120)}/>
+        <CustomButton text={"GAME1"} position={new PIXI.Point(400, 120)} onClick={handleGameButtonOnClick}/>
         <CustomButton text={"GAME2"} position={new PIXI.Point(400, 240)}/>
         <CustomButton text={"GAME3"} position={new PIXI.Point(400, 360)}/>
         <CustomButton text={"EXIT"} position={new PIXI.Point(400, 480)}/>
         </Container>
         )
+        }
+        {
+          gameState === GameState.gameState &&
+          <Spaceship position={new PIXI.Point(100, 300)}/>
         }
       </Stage>
     </Fragment>
