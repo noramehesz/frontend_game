@@ -1,29 +1,19 @@
-import React, { useState, useEffect, useRef } from 'react';
+import React, { useState, useEffect, useRef, Fragment } from 'react';
 import './App.css';
 import { Sprite, Stage } from "react-pixi-fiber";
 import splash from './images/splashexample.png';
 import * as PIXI from 'pixi.js';
+import { Background } from './bgAnimation';
 
-
-/*function useInterval(callback: () => {}, delay: number) {
-  const intervalRef = React.useRef(any);
-  const callbackRef = React.useRef(callback);
-
-  React.useEffect(() => {
-    callbackRef.current = callback;
-  }, [callback]);
-
-  React.useEffect(() => {
-      intervalRef.current = window.setInterval(() => callbackRef.current(), delay);
-      return () => window.clearInterval(intervalRef.current);
-  }, [delay]);
-  
-  return intervalRef;
-}*/
-
+enum GameState {
+  splashState = 'splashState',
+  menuState = 'menuState',
+  gameState = 'gameState',
+}
 
 function App() {
   const [spalshImage, setSplashImage] = useState({alpha: 1, visible: true});
+  const [gameState, setGameState] = useState(GameState.splashState)
 
   const requestRef = useRef(0);
   const prevValueRef = useRef(1);
@@ -36,6 +26,7 @@ function App() {
           visible: false,
           alpha: 0,
         });
+        setGameState(GameState.menuState);
         return 0;
       }
       setSplashImage({
@@ -47,42 +38,11 @@ function App() {
     }
   }
 
- /* const fadeOut = useCallback(() => {
-    function decrease() {
-      let newAlpha = spalshImage.alpha - 0.05;
-      console.log(newAlpha);
-      if (newAlpha <= 0) {
-        setSplashImage({
-          alpha: 0,
-          visible: false,
-        });
-        return true;
-      }
-      setSplashImage({
-        ...spalshImage,
-        alpha: newAlpha,
-      }); 
-      requestAnimationFrame(decrease);
-    }
-    decrease();
-  }, [spalshImage]);
-
-  useEffect(() => {
-    setTimeout(() => {
-      fadeOut();
-    }, 2000);
-  }, [fadeOut]);*/
-
   useEffect(() => {
     setTimeout(() => {
       requestRef.current = requestAnimationFrame(animate);
-      const script = document.createElement('script');
-      script.src = './space.js';
-      script.async = true;
-      document.body.appendChild(script);
       return () => {
         cancelAnimationFrame(requestRef.current);
-        document.body.removeChild(script);  
       }
     }, 2000);
   // eslint-disable-next-line react-hooks/exhaustive-deps
@@ -90,12 +50,15 @@ function App() {
 
 
   return (
-    <Stage options={{width: 800, height: 600,}}>
-      { spalshImage.visible &&
-          <Sprite texture={PIXI.Texture.from(splash)} alpha={spalshImage.alpha} zIndex={100}></Sprite>
-      }
-    </Stage>
+    <Fragment>
+      <Stage options={{width: 800, height: 600, backgroundColor: 0x02020F}}>
+        { gameState === GameState.splashState &&
+            <Sprite texture={PIXI.Texture.from(splash)} alpha={spalshImage.alpha} zIndex={100}></Sprite>
+        }
+        { gameState === GameState.menuState && <Background/>}
+      </Stage>
+    </Fragment>
 );
 }
-
+ 
 export default App;

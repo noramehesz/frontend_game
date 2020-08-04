@@ -1,4 +1,4 @@
-import * as PIXI from 'pixi.js';
+import * as PIXI from 'pixi.js'
 
 var renderer = PIXI.autoDetectRenderer(1920, 1080, { antialias: true });
 renderer.view.style.width = "100%";
