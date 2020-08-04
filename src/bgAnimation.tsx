@@ -1,4 +1,4 @@
-import React, { useEffect, createRef, useRef, useState, useCallback } from 'react';
+import React, { useEffect, useRef, useState } from 'react';
 import * as PIXI from 'pixi.js';
 import { usePixiApp, Sprite } from 'react-pixi-fiber';
 import PropTypes from 'prop-types';
