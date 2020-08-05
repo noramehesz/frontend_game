@@ -1,7 +1,6 @@
-import React, { useEffect, useState } from 'react';
+import React, { useEffect, useState, useCallback } from 'react';
 import * as PIXI from 'pixi.js';
-import { Sprite, usePixiApp } from 'react-pixi-fiber';
-import { Rocket } from '../App'
+import { Sprite } from 'react-pixi-fiber';
 import spaceship from '../images/spaceship.png';
 
 interface SpaceshipProps{
@@ -11,7 +10,7 @@ interface SpaceshipProps{
 export function Spaceship(props: SpaceshipProps) {
     const [mousePosition, setMousePosition] = useState({x: 100, y: 300});
 
-    const handleMouse = (event: any) => {
+    const handleMouse = useCallback((event: any) => {
         event.stopPropagation();
         event.preventDefault();
         let posX = event.clientX < 0 ? 0 : event.clientX > 800 ? 800 : event.clientX;
@@ -21,21 +20,16 @@ export function Spaceship(props: SpaceshipProps) {
             x: posX,
             y: posY
         })
-    }
+    }, [])
+
+    const shoot = useCallback((event: any) => {
+        props.rockets.setRocket({posX: event.clientX, posY: event.clientY});
+    }, [props.rockets]);
 
     useEffect(() => {
         document.addEventListener("mousemove", handleMouse);
         document.addEventListener("click", shoot);
-    }, [])
-
-    const shoot = (event: any) => {
-        event.stopPropagation();
-        event.preventDefault();
-        let shootedRocket: Rocket = {posX: event.clientX, posY: event.clientY}
-        let allRockets = props.rockets.rocketsList;
-        allRockets.push(shootedRocket);
-        props.rockets.setRocket(allRockets);
-    }
+    }, [handleMouse, shoot])
 
     return (
         <Sprite

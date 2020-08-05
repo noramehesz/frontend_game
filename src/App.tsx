@@ -1,12 +1,20 @@
-import React, { useState, useEffect, useRef, Fragment } from 'react';
+import React, { useState, useEffect, useRef, Fragment, useCallback } from 'react';
 import './App.css';
-import { Sprite, Stage, Container, Text } from "react-pixi-fiber";
+import { Sprite, Stage, Container, usePixiApp } from "react-pixi-fiber";
 import splash from './images/space.png';
 import rocket from './images/bullet.png';
 import * as PIXI from 'pixi.js';
 import { Background } from './bgAnimation';
 import { CustomButton } from './Button';
 import { Spaceship } from './gameItems/Spaceship';
+import { Rocket } from './gameItems/Rocket';
+
+const INITROCKETS = [
+  {posX: 0, posY: 0, visibility: false},
+  {posX: 0, posY: 0, visibility: false},
+  {posX: 0, posY: 0, visibility: false},
+];
+const NUMOFENEMIES = 25;
 
 enum GameState {
   splashState = 'splashState',
@@ -14,15 +22,16 @@ enum GameState {
   gameState = 'gameState',
 }
 
-export type Rocket = {
+export type RocketType = {
   posX: number,
   posY: number,
+  visibility: boolean,
 }
 
 function App() {
   const [spalshImage, setSplashImage] = useState({alpha: 1, visible: true});
   const [gameState, setGameState] = useState(GameState.splashState);
-  const [rockets, setRockets] = useState(new Array<Rocket>());
+  const [rocketList, setRockets] = useState(INITROCKETS);
 
   const requestRef = useRef(0);
   const prevValueRef = useRef(1);
@@ -65,6 +74,18 @@ function App() {
     window.location.replace("http://www.google.com");
   }
 
+  const addRocketWhenShoot = () => {
+    
+  }
+
+  const renderRockets = () => {
+    return ( 
+    <Container>
+      <Rocket initialPosition={{x: rocketList[0].posX, y: rocketList[0].posY}} visibilty={rocketList[0].visibility}></Rocket>
+      <Rocket initialPosition={{x: rocketList[1].posX, y: rocketList[1].posY}} visibilty={rocketList[1].visibility} ></Rocket>
+      <Rocket initialPosition={{x: rocketList[2].posX, y: rocketList[2].posY}} visibilty={rocketList[2].visibility}></Rocket>
+    </Container> );
+  }
 
   return (
     <Fragment>
@@ -73,30 +94,28 @@ function App() {
             <Sprite texture={PIXI.Texture.from(splash)} alpha={spalshImage.alpha} zIndex={100}></Sprite>
         }
         { gameState === GameState.menuState && 
-        (
-          <Container>
-        <Background/>
-          <CustomButton text={"GAME1"} position={new PIXI.Point(400, 120)} onClick={handleGameButtonOnClick}/>
-          <CustomButton text={"GAME2"} position={new PIXI.Point(400, 240)} onClick={handleGameButtonOnClick}/>
-          <CustomButton text={"GAME3"} position={new PIXI.Point(400, 360)} onClick={handleGameButtonOnClick}/>
-          <CustomButton text={"EXIT"} position={new PIXI.Point(400, 480)} onClick={handleExit}/>
-        </Container>
-        )
+          (
+            <Container>
+              <Background/>
+              <CustomButton text={"GAME1"} position={new PIXI.Point(400, 120)} onClick={handleGameButtonOnClick}/>
+              <CustomButton text={"GAME2"} position={new PIXI.Point(400, 240)} onClick={handleGameButtonOnClick}/>
+              <CustomButton text={"GAME3"} position={new PIXI.Point(400, 360)} onClick={handleGameButtonOnClick}/>
+              <CustomButton text={"EXIT"} position={new PIXI.Point(400, 480)} onClick={handleExit}/>
+            </Container>
+          )
         }
         {
           gameState === GameState.gameState &&
           (
-          <Container>
-            <Spaceship rockets={{rocketsList: rockets, setRocket: setRockets}}/>
-            {rockets.map((item) => 
-              <Sprite texture={PIXI.Texture.from(rocket)} position={new PIXI.Point(item.posX, item.posY)}></Sprite>
-            )}
-          </Container>
+            <Container interactive={true}>
+            {renderRockets()}
+            <Spaceship rockets={{rocketsList: rocketList, setRocket: addRocketWhenShoot}}/>
+            </Container>
           )
         }
       </Stage>
     </Fragment>
-);
+  );
 }
  
 export default App;
