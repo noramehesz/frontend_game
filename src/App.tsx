@@ -8,6 +8,7 @@ import { Background } from './bgAnimation';
 import { CustomButton } from './Button';
 import { Spaceship } from './gameItems/Spaceship';
 import { Rocket } from './gameItems/Rocket';
+import { Parallax } from './ParallaxBackground';
 
 const INITROCKETS = [
   {posX: 0, posY: 0, visibility: false},
@@ -31,13 +32,15 @@ export type RocketType = {
 function App() {
   const [spalshImage, setSplashImage] = useState({alpha: 1, visible: true});
   const [gameState, setGameState] = useState(GameState.splashState);
-  const [rocketList, setRockets] = useState(INITROCKETS);
+  const [rocket1, setRocket1] = useState(INITROCKETS[0]);
+  const [rocket2, setRocket2] = useState(INITROCKETS[1]);
+  const [rocket3, setRocket3] = useState(INITROCKETS[2]);
 
   const requestRef = useRef(0);
   const prevValueRef = useRef(1);
 
-  const animate = () => {
-    if (prevValueRef.current !== undefined) {
+  const animateSplash = () => {
+    if (gameState === GameState.splashState) {
       let newAlpha = prevValueRef.current - 0.01;
       if (newAlpha <= 0) {
         setSplashImage({
@@ -52,13 +55,13 @@ function App() {
         alpha: newAlpha,
       });
       prevValueRef.current = newAlpha; 
-      requestRef.current = requestAnimationFrame(animate);
+      requestRef.current = requestAnimationFrame(animateSplash);
     }
   }
 
   useEffect(() => {
     setTimeout(() => {
-      requestRef.current = requestAnimationFrame(animate);
+        requestRef.current = requestAnimationFrame(animateSplash);
       return () => {
         cancelAnimationFrame(requestRef.current);
       }
@@ -74,17 +77,30 @@ function App() {
     window.location.replace("http://www.google.com");
   }
 
-  const addRocketWhenShoot = () => {
-    
-  }
-
-  const renderRockets = () => {
-    return ( 
-    <Container>
-      <Rocket initialPosition={{x: rocketList[0].posX, y: rocketList[0].posY}} visibilty={rocketList[0].visibility}></Rocket>
-      <Rocket initialPosition={{x: rocketList[1].posX, y: rocketList[1].posY}} visibilty={rocketList[1].visibility} ></Rocket>
-      <Rocket initialPosition={{x: rocketList[2].posX, y: rocketList[2].posY}} visibilty={rocketList[2].visibility}></Rocket>
-    </Container> );
+  const addRocketWhenShoot = (pos: {x: number, y: number}) => {
+      let toUpdate;
+      if (!rocket1.visibility) {
+        toUpdate = rocket1;
+        toUpdate.posX = pos.x;
+        toUpdate.posY = pos.y;
+        toUpdate.visibility = true;
+        setRocket1(toUpdate);
+        return;
+      } else if (!rocket2.visibility) {
+        toUpdate = rocket2;
+        toUpdate.posX = pos.x;
+        toUpdate.posY = pos.y;
+        toUpdate.visibility = true;
+        setRocket2(toUpdate);
+        return;
+      } else if (!rocket3.visibility) {
+        toUpdate = rocket3;
+        toUpdate.posX = pos.x;
+        toUpdate.posY = pos.y;
+        toUpdate.visibility = true;
+        setRocket3(toUpdate);
+        return;
+      }
   }
 
   return (
@@ -108,8 +124,7 @@ function App() {
           gameState === GameState.gameState &&
           (
             <Container interactive={true}>
-            {renderRockets()}
-            <Spaceship rockets={{rocketsList: rocketList, setRocket: addRocketWhenShoot}}/>
+              <Parallax />  
             </Container>
           )
         }

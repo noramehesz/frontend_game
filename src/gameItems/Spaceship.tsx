@@ -4,7 +4,7 @@ import { Sprite } from 'react-pixi-fiber';
 import spaceship from '../images/spaceship.png';
 
 interface SpaceshipProps{
-    rockets: {rocketsList: any, setRocket: any};
+    setRockets: any;
 }
 
 export function Spaceship(props: SpaceshipProps) {
@@ -23,13 +23,15 @@ export function Spaceship(props: SpaceshipProps) {
     }, [])
 
     const shoot = useCallback((event: any) => {
-        props.rockets.setRocket({posX: event.clientX, posY: event.clientY});
-    }, [props.rockets]);
+        event.stopPropagation();
+        event.preventDefault();
+        props.setRockets({x: event.clientX, y: event.clientY});
+    }, []);
 
     useEffect(() => {
         document.addEventListener("mousemove", handleMouse);
         document.addEventListener("click", shoot);
-    }, [handleMouse, shoot])
+    }, [])
 
     return (
         <Sprite

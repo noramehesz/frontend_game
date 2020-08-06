@@ -4,7 +4,7 @@ import { Sprite } from 'react-pixi-fiber';
 import rocketImg from '../images/bullet.png';
 
 interface RocketProps {
-    initialPosition: any,
+    initialPosition: {x: number, y: number},
     visibilty: boolean,
 }
 
@@ -14,7 +14,15 @@ export function Rocket(props: RocketProps) {
     // const prevValue = 
 
     return (
-       <Sprite texture={PIXI.Texture.from(rocketImg)} position={position} visible={props.visibilty}></Sprite>
+       <Sprite 
+       texture={PIXI.Texture.from(rocketImg)} 
+       position={new PIXI.Point(position.x, position.y)} 
+       visible={true}
+       zIndex={5}
+       interactive={true}
+       scale={0.7}>
+           
+       </Sprite>
     );
 
 }
