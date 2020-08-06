@@ -6,6 +6,7 @@ import middle from './images/parallax_background/smallPlanets.png';
 import front from './images/parallax_background/planet.png';
 import rocket from './images/bullet.png';
 import { Spaceship } from './gameItems/Spaceship';
+import { RocketType } from './App';
 
 
 interface ParallaxProps {
@@ -16,7 +17,7 @@ interface ParallaxProps {
     setRocket1: any;
 }
 
-const INITROCKETS = [
+const INITROCKETS: Array<RocketType> = [
     {posX: 0, posY: 0, visibility: false},
     {posX: 0, posY: 0, visibility: false},
     {posX: 0, posY: 0, visibility: false},
@@ -47,20 +48,16 @@ export function Parallax() {
  
         if (prevVis.current) {
             if (prevX.current > 800) {
-                const newState = ({
-                    posX: 0,
-                    posY: 0,
-                    visibility: false,
-                });
+                let newRocketState = {posX: 0, posY: 0, visibility: false};
                 switch(idxOfRocket) {
                     case 1:
-                        setRocket1(newState);
+                        setRocket1(prevState => {return {...prevState, ...newRocketState}});
                         break;
                     case 2:
-                        setRocket2(newState);
+                        setRocket2(prevState => {return {...prevState, ...newRocketState}});
                         break;
                     case 3:
-                        setRocket3(newState);
+                        setRocket3(prevState => {return {...prevState, ...newRocketState}});
                         break;
                     default:
                 }
@@ -70,13 +67,13 @@ export function Parallax() {
                 const newX = prevX.current  + 3;
                 switch(idxOfRocket) {
                     case 1:
-                        setRocket1({...rocket1, posX: newX});
+                        setRocket1(prevState => { return {...prevState, posX: newX}});
                         break;
                     case 2:
-                        setRocket2({...rocket2, posX: newX});
+                        setRocket2(prevState => { return {...prevState, posX: newX}});
                         break;
                     case 3:
-                        setRocket3({...rocket3, posX: newX});
+                        setRocket3(prevState => { return {...prevState, posX: newX}});
                         break;
                     default:
                 }
@@ -85,7 +82,7 @@ export function Parallax() {
         }
     }
 
-    const animate = () => {
+    const animate = useCallback(() => {
         const newX = prevX.current - 2
         const newBgX = newX / 4;
         const newMiddleX = newX / 2;
@@ -100,47 +97,34 @@ export function Parallax() {
         moveRocket(2);
         moveRocket(3);
 
-        requestAnimationFrame(animate);
-    }
+        requestRef.current = requestAnimationFrame(animate);
+    }, [requestRef, prevX]);
 
     useEffect(() => {
         requestRef.current = requestAnimationFrame(animate);
         return () => {
             cancelAnimationFrame(requestRef.current);
         }
-    }, []); 
+    }, [animate, requestRef]); 
 
-    const addRocketWhenShoot = (pos: {x: number, y: number}) => {
-        let toUpdate;
+    const addRocketWhenShoot = useCallback((pos: {x: number, y: number}) => {
+        let toUpdate: RocketType = {posX: pos.x, posY: pos.y, visibility: true};
         if (!rocket1.visibility) {
-          toUpdate = rocket1;
-          toUpdate.posX = pos.x;
-          toUpdate.posY = pos.y;
-          toUpdate.visibility = true;
           setRocket1(toUpdate);
           rocket1PrevVis.current = true;
           rocket1PrevX.current = pos.x;
-          return;
         } else if (!rocket2.visibility) {
-          toUpdate = rocket2;
-          toUpdate.posX = pos.x;
-          toUpdate.posY = pos.y;
-          toUpdate.visibility = true;
           setRocket2(toUpdate);
           rocket2PrevVis.current = true;
           rocket2PrevX.current = pos.x;
-          return;
         } else if (!rocket3.visibility) {
-          toUpdate = rocket3;
-          toUpdate.posX = pos.x;
-          toUpdate.posY = pos.y;
-          toUpdate.visibility = true;
           setRocket3(toUpdate);
           rocket3PrevVis.current = true;
           rocket3PrevX.current = pos.x;
-          return;
         }
-    }
+    }, [rocket2, rocket3, rocket1, rocket2PrevVis, rocket2PrevX, rocket3PrevVis, rocket3PrevX, rocket1PrevVis, rocket1PrevX]);
+
+    
 
     return (
         <Container>

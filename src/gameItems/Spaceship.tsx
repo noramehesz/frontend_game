@@ -10,7 +10,7 @@ interface SpaceshipProps{
 export function Spaceship(props: SpaceshipProps) {
     const [mousePosition, setMousePosition] = useState({x: 100, y: 300});
 
-    const handleMouse = useCallback((event: any) => {
+    const handleMouse = useCallback((event: MouseEvent) => {
         event.stopPropagation();
         event.preventDefault();
         let posX = event.clientX < 0 ? 0 : event.clientX > 800 ? 800 : event.clientX;
@@ -22,16 +22,20 @@ export function Spaceship(props: SpaceshipProps) {
         })
     }, [])
 
-    const shoot = useCallback((event: any) => {
+    const shoot = useCallback((event: MouseEvent) => {
         event.stopPropagation();
         event.preventDefault();
         props.setRockets({x: event.clientX, y: event.clientY});
-    }, []);
+    }, [props])
 
     useEffect(() => {
         document.addEventListener("mousemove", handleMouse);
         document.addEventListener("click", shoot);
-    }, [])
+        return () => {
+            document.removeEventListener("mousemove", handleMouse);
+            document.removeEventListener("click", shoot);
+        }
+    }, [handleMouse, shoot])
 
     return (
         <Sprite

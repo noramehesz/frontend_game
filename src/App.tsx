@@ -1,13 +1,10 @@
-import React, { useState, useEffect, useRef, Fragment, useCallback } from 'react';
+import React, { useState, useEffect, useRef, Fragment } from 'react';
 import './App.css';
-import { Sprite, Stage, Container, usePixiApp } from "react-pixi-fiber";
+import { Sprite, Stage, Container } from "react-pixi-fiber";
 import splash from './images/space.png';
-import rocket from './images/bullet.png';
 import * as PIXI from 'pixi.js';
 import { Background } from './bgAnimation';
 import { CustomButton } from './Button';
-import { Spaceship } from './gameItems/Spaceship';
-import { Rocket } from './gameItems/Rocket';
 import { Parallax } from './ParallaxBackground';
 
 const INITROCKETS = [
@@ -32,9 +29,6 @@ export type RocketType = {
 function App() {
   const [spalshImage, setSplashImage] = useState({alpha: 1, visible: true});
   const [gameState, setGameState] = useState(GameState.splashState);
-  const [rocket1, setRocket1] = useState(INITROCKETS[0]);
-  const [rocket2, setRocket2] = useState(INITROCKETS[1]);
-  const [rocket3, setRocket3] = useState(INITROCKETS[2]);
 
   const requestRef = useRef(0);
   const prevValueRef = useRef(1);
@@ -77,31 +71,7 @@ function App() {
     window.location.replace("http://www.google.com");
   }
 
-  const addRocketWhenShoot = (pos: {x: number, y: number}) => {
-      let toUpdate;
-      if (!rocket1.visibility) {
-        toUpdate = rocket1;
-        toUpdate.posX = pos.x;
-        toUpdate.posY = pos.y;
-        toUpdate.visibility = true;
-        setRocket1(toUpdate);
-        return;
-      } else if (!rocket2.visibility) {
-        toUpdate = rocket2;
-        toUpdate.posX = pos.x;
-        toUpdate.posY = pos.y;
-        toUpdate.visibility = true;
-        setRocket2(toUpdate);
-        return;
-      } else if (!rocket3.visibility) {
-        toUpdate = rocket3;
-        toUpdate.posX = pos.x;
-        toUpdate.posY = pos.y;
-        toUpdate.visibility = true;
-        setRocket3(toUpdate);
-        return;
-      }
-  }
+ 
 
   return (
     <Fragment>
