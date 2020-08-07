@@ -24,7 +24,7 @@ export function Background(props: BgProps) {
       
     useEffect(() => {
         let state: Array<{props: any, alpha: number}> = new Array<{props: {}, alpha: number}>();
-        for (let i = 0 ; i < 200; i++) {
+        for (let i = 0 ; i < 150; i++) {
             state.push({props: getStarProps(i), alpha: Math.random()});
         }
         setStarsArray(state);
