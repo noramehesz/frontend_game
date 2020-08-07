@@ -5,6 +5,7 @@ import spaceship from '../images/spaceship.png';
 
 interface SpaceshipProps{
     setRockets: any;
+    spaceshipPosition: any,
 }
 
 export function Spaceship(props: SpaceshipProps) {
@@ -19,8 +20,13 @@ export function Spaceship(props: SpaceshipProps) {
         setMousePosition({
             x: posX,
             y: posY
-        })
-    }, [])
+        });
+        props.spaceshipPosition({
+            visibility: true,
+            posX: posX,
+            posY: posY,
+        });
+    }, [props]);
 
     const shoot = useCallback((event: MouseEvent) => {
         event.stopPropagation();

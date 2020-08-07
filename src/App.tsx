@@ -1,20 +1,13 @@
 import React, { useState, useEffect, useRef, Fragment } from 'react';
 import './App.css';
-import { Sprite, Stage, Container } from "react-pixi-fiber";
+import { Sprite, Stage, Container,Text } from "react-pixi-fiber";
 import splash from './images/space.png';
 import * as PIXI from 'pixi.js';
 import { Background } from './bgAnimation';
 import { CustomButton } from './Button';
 import { Parallax } from './ParallaxBackground';
 
-const INITROCKETS = [
-  {posX: 0, posY: 0, visibility: false},
-  {posX: 0, posY: 0, visibility: false},
-  {posX: 0, posY: 0, visibility: false},
-];
-const NUMOFENEMIES = 25;
-
-enum GameState {
+export enum GameState {
   splashState = 'splashState',
   menuState = 'menuState',
   gameState = 'gameState',
@@ -94,7 +87,7 @@ function App() {
           gameState === GameState.gameState &&
           (
             <Container interactive={true}>
-              <Parallax />  
+              <Parallax setGameState={setGameState}/>  
             </Container>
           )
         }
