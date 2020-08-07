@@ -218,9 +218,10 @@ export function Parallax(props: ParallaxProps) {
         for (let i = 0; i < 3; i++){
             let enemy = i === 0 ? enemy1 : i === 1 ? enemy2 : enemy3;
             if(enemy.visibility && collisionDetection(spaceshipPos, enemy, false) === true) {
-                let text = new PIXI.Text("GAME OVER", {fill: 'red', fonstSize: 200});
+                let text = new PIXI.Text("GAME OVER", {fill: 'red', fonstSize: 800, fontWeight: 900});
                 text.position.x = 400;
                 text.position.y = 300;
+                text.scale = new PIXI.Point(3, 3);
                 text.anchor = new PIXI.Point(0.5, 0.5);
                 app.stage.addChild(text);
                 cancelAnimationFrame(requestRef.current);

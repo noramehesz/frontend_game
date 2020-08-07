@@ -1,6 +1,6 @@
 import React, { useState, useEffect, useRef, Fragment } from 'react';
 import './App.css';
-import { Sprite, Stage, Container,Text } from "react-pixi-fiber";
+import { Sprite, Stage, Container } from "react-pixi-fiber";
 import splash from './images/space.png';
 import * as PIXI from 'pixi.js';
 import { Background } from './bgAnimation';

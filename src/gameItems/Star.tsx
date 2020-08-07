@@ -1,4 +1,4 @@
-import React, { useState, useEffect, useRef } from 'react';
+import React, { useState, useEffect, useRef, useCallback } from 'react';
 import * as PIXI from 'pixi.js';
 import { Sprite } from 'react-pixi-fiber';
 import star from "../images/star.png";
@@ -12,7 +12,7 @@ export function Star(props: StartProps) {
     const [alpha, setAlpha] = useState(Math.random());
     const requestRef = useRef(0);
 
-    const animate = () => {
+    const animate = useCallback(() => {
         if (requestRef.current !== undefined){
             const time = Date.now() / 1000;
             const freq = props.idx / 1000;
@@ -21,14 +21,14 @@ export function Star(props: StartProps) {
             setAlpha(alpha * 2);
             requestRef.current = requestAnimationFrame(animate);
         }
-    }
+    }, [props.idx]);
 
     useEffect(() => {
         requestRef.current = requestAnimationFrame(animate);
         return () => {
             cancelAnimationFrame(requestRef.current);
         }
-    }, [])
+    }, [animate])
 
     return (
         <Sprite texture={PIXI.Texture.from(star)} {...props.props} alpha={alpha}></Sprite>
