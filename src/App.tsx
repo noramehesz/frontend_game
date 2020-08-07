@@ -5,7 +5,7 @@ import splash from './images/space.png';
 import * as PIXI from 'pixi.js';
 import { Background } from './bgAnimation';
 import { CustomButton } from './Button';
-import { Parallax } from './ParallaxBackground';
+import { Parallax } from './ParallaxPlayground';
 
 export enum GameState {
   splashState = 'splashState',

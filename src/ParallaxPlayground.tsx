@@ -8,7 +8,6 @@ import rocket from './images/bullet.png';
 import { Spaceship } from './gameItems/Spaceship';
 import { RocketType, GameState } from './App';
 import enemy from './images/enemy.png';
-import { ENGINE_METHOD_PKEY_METHS } from 'constants';
 
 const ROCKETSIZE = {
     width: 53,
@@ -69,7 +68,22 @@ export function Parallax(props: ParallaxProps) {
     const enemy3PrevX = useRef(750);
     const enemy3PrevVis = useRef(false);
 
-    const collisionDetection = (rocketOrSpaceship: RocketType, enemy: RocketType, isRocket: boolean) => {
+    const doOverlap = (
+        topLeft1: [number, number], 
+        bottomRight1: [number, number], 
+        topLeft2: [number, number], 
+        bottomRight2: [number, number]
+        ) => {
+            if (topLeft1[0] > bottomRight2[0] || topLeft2[0] > bottomRight1[0]) {
+                return false;
+            }
+            if (topLeft1[1] > bottomRight2[1] || topLeft2[1] > bottomRight1[1]) {
+                return false;
+            }
+            return true;
+        }
+
+    const collisionDetection = useCallback((rocketOrSpaceship: RocketType, enemy: RocketType, isRocket: boolean) => {
         const bounds = {
             minX: rocketOrSpaceship.posX - (isRocket ? ROCKETSIZE.width/2 : SPACESHIPSIZE.width/2),
             maxX: rocketOrSpaceship.posX + (isRocket ? ROCKETSIZE.width/2 : SPACESHIPSIZE.width/2),
@@ -84,13 +98,13 @@ export function Parallax(props: ParallaxProps) {
             maxY: enemy.posY + ENEMYSIZE.height / 2,
         }
 
-           return (
-                   bounds.maxX >= enemyBounds.minX 
-                && bounds.minX <= enemyBounds.maxX 
-                && bounds.minY <= enemyBounds.maxY 
-                && bounds.maxY >= enemyBounds.minY
-            );
-    }
+        return doOverlap(
+            [bounds.minX, bounds.minY], 
+            [bounds.maxX, bounds.maxY], 
+            [enemyBounds.minX, enemyBounds.minY], 
+            [enemyBounds.maxX, enemyBounds.maxY]
+        );
+    }, []);
 
     const moveObject = (idx: number, isRocket: boolean) => {
         const prevX = idx === 1 ? (isRocket? rocket1PrevX: enemy1PrevX) 
@@ -129,7 +143,7 @@ export function Parallax(props: ParallaxProps) {
                 prevX.current = isRocket ? 0 : 750;
                 prevVis.current = false;
             } else {
-                const newX = prevX.current  + (isRocket ? 8 : -5);
+                const newX = prevX.current  + (isRocket ? 7 : -4);
                 switch(idx) {
                     case 1:
                         if (isRocket) {
@@ -212,7 +226,7 @@ export function Parallax(props: ParallaxProps) {
                 cancelAnimationFrame(requestRef.current);
                 setTimeout(() => {
                     props.setGameState(GameState.menuState);
-                }, 1000);
+                }, 500);
             }
         }
 
@@ -248,7 +262,7 @@ export function Parallax(props: ParallaxProps) {
         }
 
         requestRef.current = requestAnimationFrame(animate);
-    }, [requestRef, prevX, createEnemy, props, enemy1, enemy2, enemy3, spaceshipPos, app.stage]);
+    }, [requestRef, prevX, createEnemy, props, enemy1, enemy2, enemy3, spaceshipPos, app.stage, rocket1, rocket2, rocket3, collisionDetection]);
 
     useEffect(() => {
         requestRef.current = requestAnimationFrame(animate);
