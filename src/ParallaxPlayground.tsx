@@ -38,6 +38,7 @@ const INITROCKETS: Array<RocketType> = [
 
 export function Parallax(props: ParallaxProps) {
   const app = usePixiApp();
+  const willMount = useRef(true);
   const [BgX, setBgX] = useState(0);
   const [middleX, setMiddleX] = useState(0);
   const [frontX, setFrontx] = useState(0);
@@ -87,50 +88,30 @@ export function Parallax(props: ParallaxProps) {
   const enemy3PrevX = useRef(750);
   const enemy3PrevVis = useRef(false);
 
-  const doOverlap = (
-    topLeft1: [number, number],
-    bottomRight1: [number, number],
-    topLeft2: [number, number],
-    bottomRight2: [number, number]
-  ) => {
-    if (topLeft1[0] > bottomRight2[0] || topLeft2[0] > bottomRight1[0]) {
-      return false;
-    }
-    if (topLeft1[1] > bottomRight2[1] || topLeft2[1] > bottomRight1[1]) {
-      return false;
-    }
-    return true;
+  const loadSpritesheet = () => {
+    const baseTexture = PIXI.BaseTexture.from(blowUpPng);
+    const spritesheet = new PIXI.Spritesheet(baseTexture, blowUpJson);
+    spritesheet.parse(() =>
+      setBBlowingUp(
+        Object.keys(spritesheet.textures).map((t) => spritesheet.textures[t])
+      )
+    );
   };
+
+  if (willMount.current) {
+    loadSpritesheet();
+    willMount.current = false;
+  }
 
   const collisionDetection = useCallback(
     (rocketOrSpaceship: RocketType, enemy: RocketType, isRocket: boolean) => {
-      const bounds = {
-        minX:
-          rocketOrSpaceship.posX -
-          (isRocket ? ROCKETSIZE.width / 2 : SPACESHIPSIZE.width / 2),
-        maxX:
-          rocketOrSpaceship.posX +
-          (isRocket ? ROCKETSIZE.width / 2 : SPACESHIPSIZE.width / 2),
-        minY:
-          rocketOrSpaceship.posY -
-          (isRocket ? ROCKETSIZE.height / 2 : SPACESHIPSIZE.height / 2),
-        maxY:
-          rocketOrSpaceship.posX +
-          (isRocket ? ROCKETSIZE.height / 2 : SPACESHIPSIZE.height / 2),
-      };
+      const sizes = isRocket ? ROCKETSIZE : SPACESHIPSIZE;
 
-      const enemyBounds = {
-        minX: enemy.posX - ENEMYSIZE.width / 2,
-        maxX: enemy.posX + ENEMYSIZE.width / 2,
-        minY: enemy.posY - ENEMYSIZE.height / 2,
-        maxY: enemy.posY + ENEMYSIZE.height / 2,
-      };
-
-      return doOverlap(
-        [bounds.minX, bounds.minY],
-        [bounds.maxX, bounds.maxY],
-        [enemyBounds.minX, enemyBounds.minY],
-        [enemyBounds.maxX, enemyBounds.maxY]
+      return (
+        rocketOrSpaceship.posX + sizes.width > enemy.posX &&
+        rocketOrSpaceship.posX < enemy.posX + ENEMYSIZE.width &&
+        rocketOrSpaceship.posY + sizes.height > enemy.posY &&
+        rocketOrSpaceship.posY < enemy.posY + ENEMYSIZE.height
       );
     },
     []
@@ -247,9 +228,26 @@ export function Parallax(props: ParallaxProps) {
     }
   };
 
+  const gameOver = () => {
+    let text = new PIXI.Text("GAME OVER", {
+      fill: "red",
+      fonstSize: 800,
+      fontWeight: 900,
+    });
+    text.position.x = 400;
+    text.position.y = 300;
+    text.scale = new PIXI.Point(3, 3);
+    text.anchor = new PIXI.Point(0.5, 0.5);
+    app.stage.addChild(text);
+    cancelAnimationFrame(requestRef.current);
+    setTimeout(() => {
+      props.setGameState(GameState.menuState);
+    }, 500);
+  };
+
   const createEnemy = useCallback(() => {
     let newEnemy: RocketType = {
-      posX: 750,
+      posX: 800,
       posY: Math.floor(Math.random() * 561),
       visibility: true,
     };
@@ -292,28 +290,12 @@ export function Parallax(props: ParallaxProps) {
     moveObject(2, false);
     moveObject(3, false);
 
-    //check spaceship colision
-    for (let i = 0; i < 3; i++) {
-      let enemy = i === 0 ? enemy1 : i === 1 ? enemy2 : enemy3;
-      if (
-        enemy.visibility &&
-        collisionDetection(spaceshipPos, enemy, false) === true
-      ) {
-        let text = new PIXI.Text("GAME OVER", {
-          fill: "red",
-          fonstSize: 800,
-          fontWeight: 900,
-        });
-        text.position.x = 400;
-        text.position.y = 300;
-        text.scale = new PIXI.Point(3, 3);
-        text.anchor = new PIXI.Point(0.5, 0.5);
-        app.stage.addChild(text);
-        cancelAnimationFrame(requestRef.current);
-        setTimeout(() => {
-          props.setGameState(GameState.menuState);
-        }, 500);
-      }
+    if (
+      collisionDetection(spaceshipPos, enemy1, false) ||
+      collisionDetection(spaceshipPos, enemy2, false) ||
+      collisionDetection(spaceshipPos, enemy3, false)
+    ) {
+      gameOver();
     }
 
     //check rockets & enemies
@@ -383,17 +365,11 @@ export function Parallax(props: ParallaxProps) {
     rocket2,
     rocket3,
     collisionDetection,
+    blowingUp,
   ]);
 
   useEffect(() => {
     requestRef.current = requestAnimationFrame(animate);
-    const baseTexture = PIXI.BaseTexture.from(blowUpPng);
-    const spritesheet = new PIXI.Spritesheet(baseTexture, blowUpJson);
-    spritesheet.parse(() =>
-      setBBlowingUp(
-        Object.keys(spritesheet.textures).map((t) => spritesheet.textures[t])
-      )
-    );
     return () => {
       cancelAnimationFrame(requestRef.current);
     };
