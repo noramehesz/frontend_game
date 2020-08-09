@@ -56,18 +56,18 @@ export function Parallax(props: ParallaxProps) {
   const [rocket3, setRocket3] = useState(INITROCKETS[2]);
 
   const [enemy1, setEnemy1] = useState({
-    posX: 0,
-    posY: 0,
+    posX: -200,
+    posY: -200,
     visibility: false,
   } as RocketType);
   const [enemy2, setEnemy2] = useState({
-    posX: 0,
-    posY: 0,
+    posX: -200,
+    posY: -200,
     visibility: false,
   } as RocketType);
   const [enemy3, setEnemy3] = useState({
-    posX: 0,
-    posY: 0,
+    posX: -200,
+    posY: -200,
     visibility: false,
   } as RocketType);
 
@@ -325,13 +325,13 @@ export function Parallax(props: ParallaxProps) {
               const blowPos = { x: enemy.posX, y: enemy.posY };
 
               setRocket({
-                posX: 0,
-                posY: 0,
+                posX: -200,
+                posY: -200,
                 visibility: false,
               });
               setEnemy({
-                posX: 0,
-                posY: 0,
+                posX: -200,
+                posY: -200,
                 visibility: false,
               });
               const animateBlow = new PIXI.AnimatedSprite(blowingUp);
