@@ -107,11 +107,42 @@ export function Parallax(props: ParallaxProps) {
     (rocketOrSpaceship: RocketType, enemy: RocketType, isRocket: boolean) => {
       const sizes = isRocket ? ROCKETSIZE : SPACESHIPSIZE;
 
+      //   const bounds = {
+      //     minX:
+      //       rocketOrSpaceship.posX -
+      //       (isRocket ? ROCKETSIZE.width / 2 : SPACESHIPSIZE.width / 2),
+      //     maxX:
+      //       rocketOrSpaceship.posX +
+      //       (isRocket ? ROCKETSIZE.width / 2 : SPACESHIPSIZE.width / 2),
+      //     minY:
+      //       rocketOrSpaceship.posY -
+      //       (isRocket ? ROCKETSIZE.height / 2 : SPACESHIPSIZE.height / 2),
+      //     maxY:
+      //       rocketOrSpaceship.posX +
+      //       (isRocket ? ROCKETSIZE.height / 2 : SPACESHIPSIZE.height / 2),
+      //   };
+
+      //   const enemyBounds = {
+      //     minX: enemy.posX - ENEMYSIZE.width / 2,
+      //     maxX: enemy.posX + ENEMYSIZE.width / 2,
+      //     minY: enemy.posY - ENEMYSIZE.height / 2,
+      //     maxY: enemy.posY + ENEMYSIZE.height / 2,
+      //   };
+
+      const enemyB = {
+        posX: enemy.posX - ENEMYSIZE.width / 2,
+        posY: enemy.posY - ENEMYSIZE.height / 2,
+      };
+      const nonEnemyBounds = {
+        posX: rocketOrSpaceship.posX - sizes.width / 2,
+        posY: rocketOrSpaceship.posY - sizes.height / 2,
+      };
+
       return (
-        rocketOrSpaceship.posX + sizes.width > enemy.posX &&
-        rocketOrSpaceship.posX < enemy.posX + ENEMYSIZE.width &&
-        rocketOrSpaceship.posY + sizes.height > enemy.posY &&
-        rocketOrSpaceship.posY < enemy.posY + ENEMYSIZE.height
+        nonEnemyBounds.posX + sizes.width >= enemyB.posX &&
+        nonEnemyBounds.posX <= enemyB.posX + ENEMYSIZE.width &&
+        nonEnemyBounds.posY + sizes.height >= enemyB.posY &&
+        nonEnemyBounds.posY <= enemyB.posY + ENEMYSIZE.height
       );
     },
     []
