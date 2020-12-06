@@ -1,6 +1,12 @@
 import React, { useEffect, useState, useRef, useCallback } from "react";
 import * as PIXI from "pixi.js";
-import { Container, TilingSprite, Sprite, usePixiApp } from "react-pixi-fiber";
+import {
+  Container,
+  TilingSprite,
+  Sprite,
+  usePixiApp,
+  Text,
+} from "react-pixi-fiber";
 import bg from "./images/parallax_background/background.png";
 import middle from "./images/parallax_background/smallPlanets.png";
 import front from "./images/parallax_background/planet.png";
@@ -36,12 +42,24 @@ const INITROCKETS: Array<RocketType> = [
   { posX: 0, posY: 0, visibility: false },
 ];
 
+type EnemyPath = {
+  A1: number;
+  A2: number;
+  p1: number;
+  p2: number;
+};
+
 export function Parallax(props: ParallaxProps) {
   const app = usePixiApp();
   const willMount = useRef(true);
   const [BgX, setBgX] = useState(0);
   const [middleX, setMiddleX] = useState(0);
   const [frontX, setFrontx] = useState(0);
+  const [score, setScore] = useState(0);
+  const scoreAsRef = useRef(0);
+  const scoreStyle = new PIXI.TextStyle();
+  scoreStyle.fill = "#FFFFFF";
+  scoreStyle.dropShadow = true;
 
   const [blowingUp, setBBlowingUp] = useState(new Array<PIXI.Texture>());
 
@@ -51,6 +69,8 @@ export function Parallax(props: ParallaxProps) {
     visibility: true,
   });
 
+  const spaceshipDies = useRef({ rot: 0, scale: { x: 1, y: 1 }, opacity: 1 });
+
   const [rocket1, setRocket1] = useState(INITROCKETS[0]);
   const [rocket2, setRocket2] = useState(INITROCKETS[1]);
   const [rocket3, setRocket3] = useState(INITROCKETS[2]);
@@ -58,18 +78,24 @@ export function Parallax(props: ParallaxProps) {
   const [enemy1, setEnemy1] = useState({
     posX: -200,
     posY: -200,
+    startY: 0,
     visibility: false,
-  } as RocketType);
+    path: {} as EnemyPath,
+  });
   const [enemy2, setEnemy2] = useState({
     posX: -200,
     posY: -200,
     visibility: false,
-  } as RocketType);
+    startY: 0,
+    path: {} as EnemyPath,
+  });
   const [enemy3, setEnemy3] = useState({
     posX: -200,
     posY: -200,
     visibility: false,
-  } as RocketType);
+    startY: 0,
+    path: {} as EnemyPath,
+  });
 
   const requestRef = useRef(0);
   const prevX = useRef(0);
@@ -102,6 +128,9 @@ export function Parallax(props: ParallaxProps) {
     loadSpritesheet();
     willMount.current = false;
   }
+
+  const getRandom = (min: number, max: number) =>
+    Math.random() * (max - min) + min;
 
   const collisionDetection = useCallback(
     (rocketOrSpaceship: RocketType, enemy: RocketType, isRocket: boolean) => {
@@ -175,6 +204,7 @@ export function Parallax(props: ParallaxProps) {
         ? rocket3PrevVis
         : enemy3PrevVis;
 
+    // out of space
     if (prevVis.current) {
       if (isRocket ? prevX.current > 800 : prevX.current < 0) {
         let newState = { posX: 0, posY: 0, visibility: false };
@@ -217,7 +247,7 @@ export function Parallax(props: ParallaxProps) {
         prevX.current = isRocket ? 0 : 750;
         prevVis.current = false;
       } else {
-        const newX = prevX.current + (isRocket ? 7 : -4);
+        const newX = prevX.current + (isRocket ? 7 : -6);
         switch (idx) {
           case 1:
             if (isRocket) {
@@ -226,7 +256,15 @@ export function Parallax(props: ParallaxProps) {
               });
             } else {
               setEnemy1((prevState) => {
-                return { ...prevState, posX: newX };
+                return {
+                  ...prevState,
+                  posX: newX,
+                  posY:
+                    prevState.path.A1 *
+                      Math.cos(prevState.path.p1 * newX + 1000) +
+                    prevState.path.A2 * Math.cos(prevState.path.p2 * newX) +
+                    prevState.startY,
+                };
               });
             }
             break;
@@ -237,7 +275,15 @@ export function Parallax(props: ParallaxProps) {
               });
             } else {
               setEnemy2((prevState) => {
-                return { ...prevState, posX: newX };
+                return {
+                  ...prevState,
+                  posX: newX,
+                  posY:
+                    prevState.path.A1 *
+                      Math.cos(prevState.path.p1 * newX + 1000) +
+                    prevState.path.A2 * Math.cos(prevState.path.p2 * newX) +
+                    prevState.startY,
+                };
               });
             }
             break;
@@ -248,7 +294,15 @@ export function Parallax(props: ParallaxProps) {
               });
             } else {
               setEnemy3((prevState) => {
-                return { ...prevState, posX: newX };
+                return {
+                  ...prevState,
+                  posX: newX,
+                  posY:
+                    prevState.path.A1 *
+                      Math.cos(prevState.path.p1 * newX + 1000) +
+                    prevState.path.A2 * Math.cos(prevState.path.p2 * newX) +
+                    prevState.startY,
+                };
               });
             }
             break;
@@ -259,7 +313,16 @@ export function Parallax(props: ParallaxProps) {
     }
   };
 
-  const gameOver = () => {
+  const gameOverAnimationForSpaceship = useCallback(() => {
+    spaceshipDies.current.rot = spaceshipDies.current.rot + 0.2;
+    spaceshipDies.current.opacity = spaceshipDies.current.opacity - 0.05;
+    spaceshipDies.current.scale = {
+      x: spaceshipDies.current.scale.x - 0.02,
+      y: spaceshipDies.current.scale.y - 0.02,
+    };
+  }, []);
+
+  const gameOver = useCallback(() => {
     let text = new PIXI.Text("GAME OVER", {
       fill: "red",
       fonstSize: 800,
@@ -273,13 +336,28 @@ export function Parallax(props: ParallaxProps) {
     cancelAnimationFrame(requestRef.current);
     setTimeout(() => {
       props.setGameState(GameState.menuState);
-    }, 500);
-  };
+    }, 750);
+  }, [props, app.stage]);
 
   const createEnemy = useCallback(() => {
-    let newEnemy: RocketType = {
-      posX: 800,
-      posY: Math.floor(Math.random() * 561),
+    const maxAmplitude = (600 - ENEMYSIZE.height) / 2;
+    const a = getRandom(50, maxAmplitude);
+    const a2 = getRandom(0, maxAmplitude - a);
+    const start = getRandom(
+      ENEMYSIZE.height / 2 + a + a2,
+      600 - a - a2 - ENEMYSIZE.height / 2
+    );
+    const path: EnemyPath = {
+      A1: Math.max(a, a2),
+      A2: Math.min(a, a2),
+      p1: getRandom(0.003, 0.005),
+      p2: getRandom(0.01, 0.02),
+    };
+    let newEnemy = {
+      posX: 850,
+      posY: start,
+      startY: start,
+      path: path,
       visibility: true,
     };
     if (!enemy1.visibility) {
@@ -307,7 +385,7 @@ export function Parallax(props: ParallaxProps) {
     setFrontx(newFrontX);
     prevX.current = newX;
 
-    if (time.current % 120 === 0) {
+    if (time.current % 60 === 0) {
       createEnemy();
     }
 
@@ -327,6 +405,7 @@ export function Parallax(props: ParallaxProps) {
       collisionDetection(spaceshipPos, enemy3, false)
     ) {
       gameOver();
+      gameOverAnimationForSpaceship();
     }
 
     //check rockets & enemies
@@ -355,6 +434,9 @@ export function Parallax(props: ParallaxProps) {
                 k === 0 ? enemy1PrevX : k === 1 ? enemy2PrevX : enemy3PrevX;
               const blowPos = { x: enemy.posX, y: enemy.posY };
 
+              scoreAsRef.current = scoreAsRef.current + 1;
+              setScore(scoreAsRef.current);
+              console.log(scoreAsRef.current);
               setRocket({
                 posX: -200,
                 posY: -200,
@@ -364,6 +446,8 @@ export function Parallax(props: ParallaxProps) {
                 posX: -200,
                 posY: -200,
                 visibility: false,
+                path: { A1: 0, A2: 0, p1: 0, p2: 0 },
+                startY: 0,
               });
               const animateBlow = new PIXI.AnimatedSprite(blowingUp);
               animateBlow.position = new PIXI.Point(blowPos.x, blowPos.y);
@@ -386,7 +470,6 @@ export function Parallax(props: ParallaxProps) {
     requestRef,
     prevX,
     createEnemy,
-    props,
     enemy1,
     enemy2,
     enemy3,
@@ -397,6 +480,8 @@ export function Parallax(props: ParallaxProps) {
     rocket3,
     collisionDetection,
     blowingUp,
+    gameOver,
+    gameOverAnimationForSpaceship,
   ]);
 
   useEffect(() => {
@@ -500,6 +585,16 @@ export function Parallax(props: ParallaxProps) {
       <Spaceship
         setRockets={addRocketWhenShoot}
         spaceshipPosition={setSaceshipPos}
+        state={spaceshipDies.current}
+      />
+
+      <Text
+        x={775}
+        y={575}
+        anchor={new PIXI.Point(0.5, 0.5)}
+        scale={new PIXI.Point(2, 2)}
+        text={score.toString()}
+        style={scoreStyle}
       />
     </Container>
   );
