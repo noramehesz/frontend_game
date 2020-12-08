@@ -307,12 +307,13 @@ export function Parallax(props: ParallaxProps) {
   const setHighScore = useCallback(async () => {
     let prevScores: number[] = await get("highScore");
     if (prevScores === undefined) {
-      set("highScore", [score]);
+      await set("highScore", [score]);
+      return;
     }
-    prevScores.push(score);
-    prevScores.sort().reverse();
+    prevScores.push(scoreAsRef.current);
+    prevScores = prevScores.sort((a, b) => b - a);
     if (prevScores.length > 10) {
-      prevScores = prevScores.slice(0, 9)
+      prevScores = prevScores.slice(0, 10)
     }
     await set("highScore", prevScores);
   }, [score]);
@@ -329,11 +330,11 @@ export function Parallax(props: ParallaxProps) {
     text.scale = new PIXI.Point(3, 3);
     text.anchor = new PIXI.Point(0.5, 0.5);
     app.stage.addChild(text);
-    setHighScore();
 
     cancelAnimationFrame(requestRef.current);
     setTimeout(() => {
       props.setGameState(GameState.menuState);
+      setHighScore();
     }, 1250);
   }, [props, app.stage, setHighScore]);
 
