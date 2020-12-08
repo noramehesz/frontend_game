@@ -16,6 +16,7 @@ import blowUpJson from "./images/spritesheet.json";
 import { Spaceship } from "./gameItems/Spaceship";
 import { RocketType, GameState } from "./App";
 import enemy from "./images/enemy.png";
+import { set, get } from "idb-keyval";
 
 const ROCKETSIZE = {
   width: 53,
@@ -115,7 +116,7 @@ export function Parallax(props: ParallaxProps) {
   const enemy3PrevX = useRef(750);
   const enemy3PrevVis = useRef(false);
 
-  const [isGameOver, setGameOver] = useState(false)
+  const [isGameOver, setGameOver] = useState(false);
 
   const loadSpritesheet = () => {
     const baseTexture = PIXI.BaseTexture.from(blowUpPng);
@@ -228,7 +229,8 @@ export function Parallax(props: ParallaxProps) {
         prevX.current = isRocket ? 0 : 750;
         prevVis.current = false;
       } else {
-        const newX = prevX.current + (isRocket ? (7 + (delta/7)) : (-4 - (delta/4)));
+        const newX =
+          prevX.current + (isRocket ? 7 + delta / 7 : -4 - delta / 4);
         switch (idx) {
           case 1:
             if (isRocket) {
@@ -241,8 +243,7 @@ export function Parallax(props: ParallaxProps) {
                   ...prevState,
                   posX: newX - (delta ? delta : 0),
                   posY:
-                    prevState.path.A1 *
-                      Math.cos(prevState.path.p1 * newX) +
+                    prevState.path.A1 * Math.cos(prevState.path.p1 * newX) +
                     prevState.path.A2 * Math.cos(prevState.path.p2 * newX) +
                     prevState.startY,
                 };
@@ -303,8 +304,21 @@ export function Parallax(props: ParallaxProps) {
     };
   }, []);
 
+  const setHighScore = useCallback(async () => {
+    let prevScores: number[] = await get("highScore");
+    if (prevScores === undefined) {
+      set("highScore", [score]);
+    }
+    prevScores.push(score);
+    prevScores.sort().reverse();
+    if (prevScores.length > 10) {
+      prevScores = prevScores.slice(0, 9)
+    }
+    await set("highScore", prevScores);
+  }, [score]);
+
   const gameOver = useCallback(() => {
-    setGameOver(true)
+    setGameOver(true);
     let text = new PIXI.Text("GAME OVER", {
       fill: "red",
       fonstSize: 800,
@@ -315,11 +329,13 @@ export function Parallax(props: ParallaxProps) {
     text.scale = new PIXI.Point(3, 3);
     text.anchor = new PIXI.Point(0.5, 0.5);
     app.stage.addChild(text);
+    setHighScore();
+
     cancelAnimationFrame(requestRef.current);
     setTimeout(() => {
       props.setGameState(GameState.menuState);
     }, 1250);
-  }, [props, app.stage]);
+  }, [props, app.stage, setHighScore]);
 
   const createEnemy = useCallback(() => {
     const maxAmplitude = (600 - ENEMYSIZE.height) / 2;
@@ -334,7 +350,7 @@ export function Parallax(props: ParallaxProps) {
       A2: Math.min(a, a2),
       p1: getRandom(0.003, 0.005),
       p2: getRandom(0.01, 0.02),
-      translation: getRandom(0, 2* Math.PI)
+      translation: getRandom(0, 2 * Math.PI),
     };
     let newEnemy = {
       posX: 850,
@@ -356,126 +372,130 @@ export function Parallax(props: ParallaxProps) {
   }, [enemy1, enemy2, enemy3]);
 
   const time = useRef(0);
-  const start = useRef(0)
+  const start = useRef(0);
 
-  const animate = useCallback((timestamp) => { //ts is ms
-    if (start.current === 0 ){
-      start.current = timestamp
-    }
-    const delta = timestamp - start.current;
-    start.current = timestamp
-    time.current = time.current + 1;
-    const newX = prevX.current - 2 - (delta/8);
-    const newBgX = newX / 4;
-    const newMiddleX = newX / 2;
-    const newFrontX = newX;
-    setBgX(newBgX);
-    setMiddleX(newMiddleX);
-    setFrontx(newFrontX);
-    prevX.current = newX;
+  const animate = useCallback(
+    (timestamp) => {
+      //ts is ms
+      if (start.current === 0) {
+        start.current = timestamp;
+      }
+      const delta = timestamp - start.current;
+      start.current = timestamp;
+      time.current = time.current + 1;
+      const newX = prevX.current - 2 - delta / 8;
+      const newBgX = newX / 4;
+      const newMiddleX = newX / 2;
+      const newFrontX = newX;
+      setBgX(newBgX);
+      setMiddleX(newMiddleX);
+      setFrontx(newFrontX);
+      prevX.current = newX;
 
-    if (time.current % 60 === 0) {
-      createEnemy();
-    }
+      if (time.current % 60 === 0) {
+        createEnemy();
+      }
 
-    // move rockets
-    moveObject(1, true, delta);
-    moveObject(2, true, delta);
-    moveObject(3, true, delta);
+      // move rockets
+      moveObject(1, true, delta);
+      moveObject(2, true, delta);
+      moveObject(3, true, delta);
 
-    // move enemies
-    moveObject(1, false, delta);
-    moveObject(2, false, delta);
-    moveObject(3, false, delta);
+      // move enemies
+      moveObject(1, false, delta);
+      moveObject(2, false, delta);
+      moveObject(3, false, delta);
 
-    if (
-      collisionDetection(spaceshipPos, enemy1, false) ||
-      collisionDetection(spaceshipPos, enemy2, false) ||
-      collisionDetection(spaceshipPos, enemy3, false)
-    ) {
-      gameOver();
-    }
-    
-    if (isGameOver) {
-      gameOverAnimationForSpaceship(delta);
-    }
+      if (
+        collisionDetection(spaceshipPos, enemy1, false) ||
+        collisionDetection(spaceshipPos, enemy2, false) ||
+        collisionDetection(spaceshipPos, enemy3, false)
+      ) {
+        gameOver();
+      }
 
-    //check rockets & enemies
-    for (let j = 0; j < 3; j++) {
-      //rockets
-      let rocket = j === 0 ? rocket1 : j === 1 ? rocket2 : rocket3;
-      if (rocket.visibility) {
-        //if rocket is on the playground
-        for (let k = 0; k < 3; k++) {
-          //enemies
-          let enemy = k === 0 ? enemy1 : k === 1 ? enemy2 : enemy3;
-          if (enemy.visibility) {
-            // if enemy is on the playground
-            if (collisionDetection(rocket, enemy, true)) {
-              const setRocket =
-                j === 0 ? setRocket1 : j === 1 ? setRocket2 : setRocket3;
-              const setEnemy =
-                k === 0 ? setEnemy1 : k === 1 ? setEnemy2 : setEnemy3;
-              let enemyPrevVis =
-                k === 0
-                  ? enemy1PrevVis
-                  : k === 1
-                  ? enemy2PrevVis
-                  : enemy3PrevVis;
-              let enemyPrevX =
-                k === 0 ? enemy1PrevX : k === 1 ? enemy2PrevX : enemy3PrevX;
-              const blowPos = { x: enemy.posX, y: enemy.posY };
+      if (isGameOver) {
+        gameOverAnimationForSpaceship(delta);
+      }
 
-              scoreAsRef.current = scoreAsRef.current + 1;
-              setScore(scoreAsRef.current);
-              console.log(scoreAsRef.current);
-              setRocket({
-                posX: -200,
-                posY: -200,
-                visibility: false,
-              });
-              setEnemy({
-                posX: -200,
-                posY: -200,
-                visibility: false,
-                path: { A1: 0, A2: 0, p1: 0, p2: 0, translation: 0 },
-                startY: 0,
-              });
-              const animateBlow = new PIXI.AnimatedSprite(blowingUp);
-              animateBlow.position = new PIXI.Point(blowPos.x, blowPos.y);
-              animateBlow.anchor = new PIXI.Point(0.5, 0.5);
-              animateBlow.play();
-              app.stage.addChild(animateBlow);
-              enemyPrevVis.current = false;
-              enemyPrevX.current = 750;
-              setTimeout(() => {
-                app.stage.removeChild(animateBlow);
-              }, 250);
+      //check rockets & enemies
+      for (let j = 0; j < 3; j++) {
+        //rockets
+        let rocket = j === 0 ? rocket1 : j === 1 ? rocket2 : rocket3;
+        if (rocket.visibility) {
+          //if rocket is on the playground
+          for (let k = 0; k < 3; k++) {
+            //enemies
+            let enemy = k === 0 ? enemy1 : k === 1 ? enemy2 : enemy3;
+            if (enemy.visibility) {
+              // if enemy is on the playground
+              if (collisionDetection(rocket, enemy, true)) {
+                const setRocket =
+                  j === 0 ? setRocket1 : j === 1 ? setRocket2 : setRocket3;
+                const setEnemy =
+                  k === 0 ? setEnemy1 : k === 1 ? setEnemy2 : setEnemy3;
+                let enemyPrevVis =
+                  k === 0
+                    ? enemy1PrevVis
+                    : k === 1
+                    ? enemy2PrevVis
+                    : enemy3PrevVis;
+                let enemyPrevX =
+                  k === 0 ? enemy1PrevX : k === 1 ? enemy2PrevX : enemy3PrevX;
+                const blowPos = { x: enemy.posX, y: enemy.posY };
+
+                scoreAsRef.current = scoreAsRef.current + 1;
+                setScore(scoreAsRef.current);
+                console.log(scoreAsRef.current);
+                setRocket({
+                  posX: -200,
+                  posY: -200,
+                  visibility: false,
+                });
+                setEnemy({
+                  posX: -200,
+                  posY: -200,
+                  visibility: false,
+                  path: { A1: 0, A2: 0, p1: 0, p2: 0, translation: 0 },
+                  startY: 0,
+                });
+                const animateBlow = new PIXI.AnimatedSprite(blowingUp);
+                animateBlow.position = new PIXI.Point(blowPos.x, blowPos.y);
+                animateBlow.anchor = new PIXI.Point(0.5, 0.5);
+                animateBlow.play();
+                app.stage.addChild(animateBlow);
+                enemyPrevVis.current = false;
+                enemyPrevX.current = 750;
+                setTimeout(() => {
+                  app.stage.removeChild(animateBlow);
+                }, 250);
+              }
             }
           }
         }
       }
-    }
 
-    requestRef.current = requestAnimationFrame(animate);
-  }, [
-    requestRef,
-    prevX,
-    createEnemy,
-    enemy1,
-    enemy2,
-    enemy3,
-    spaceshipPos,
-    app.stage,
-    rocket1,
-    rocket2,
-    rocket3,
-    collisionDetection,
-    blowingUp,
-    gameOver,
-    gameOverAnimationForSpaceship,
-    isGameOver
-  ]);
+      requestRef.current = requestAnimationFrame(animate);
+    },
+    [
+      requestRef,
+      prevX,
+      createEnemy,
+      enemy1,
+      enemy2,
+      enemy3,
+      spaceshipPos,
+      app.stage,
+      rocket1,
+      rocket2,
+      rocket3,
+      collisionDetection,
+      blowingUp,
+      gameOver,
+      gameOverAnimationForSpaceship,
+      isGameOver,
+    ]
+  );
 
   useEffect(() => {
     requestRef.current = requestAnimationFrame(animate);

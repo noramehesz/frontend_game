@@ -6,11 +6,13 @@ import * as PIXI from "pixi.js";
 import { Background } from "./bgAnimation";
 import { CustomButton } from "./Button";
 import { Parallax } from "./ParallaxPlayground";
+import HighScores from "./HighScores";
 
 export enum GameState {
   splashState = "splashState",
   menuState = "menuState",
   gameState = "gameState",
+  highScores = "highScores"
 }
 
 export type RocketType = {
@@ -60,6 +62,14 @@ function App() {
     setGameState(GameState.gameState);
   };
 
+  const handleHighScoreOnClick = () => {
+    setGameState(GameState.highScores)
+  }
+
+  const handleBackButton = () => {
+    setGameState(GameState.menuState)
+  }
+
   const handleExit = () => {
     window.location.replace("http://www.google.com");
   };
@@ -92,9 +102,10 @@ function App() {
               onClick={handleGameButtonOnClick}
             />
             <CustomButton
-              text={"GAME3"}
+              text={"HIGH SCORES"}
               position={new PIXI.Point(400, 360)}
-              onClick={handleGameButtonOnClick}
+              onClick={handleHighScoreOnClick}
+              isHighScore
             />
             <CustomButton
               text={"EXIT"}
@@ -108,6 +119,14 @@ function App() {
             <Parallax setGameState={setGameState} />
           </Container>
         )}
+        {
+          gameState === GameState.highScores && (
+            <Container>
+              <Background/>
+              <HighScores backToMenuOnClick={handleBackButton}/>
+            </Container>
+          )
+        }
       </Stage>
     </Fragment>
   );
