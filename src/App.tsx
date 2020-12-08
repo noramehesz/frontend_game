@@ -2,6 +2,7 @@ import React, { useState, useEffect, useRef, Fragment } from "react";
 import "./App.css";
 import { Sprite, Stage, Container } from "react-pixi-fiber";
 import splash from "./images/space.png";
+import logo from "./images/logo.png"
 import * as PIXI from "pixi.js";
 import { Background } from "./bgAnimation";
 import { CustomButton } from "./Button";
@@ -91,13 +92,14 @@ function App() {
         {gameState === GameState.menuState && (
           <Container>
             <Background />
+            <Sprite 
+             texture={PIXI.Texture.from(logo)}
+              position={new PIXI.Point(400, 100)}
+              anchor={new PIXI.Point(0.5, 0.5)}
+              scale={new PIXI.Point(0.6, 0.6)}
+             />
             <CustomButton
-              text={"GAME1"}
-              position={new PIXI.Point(400, 120)}
-              onClick={handleGameButtonOnClick}
-            />
-            <CustomButton
-              text={"GAME2"}
+              text={"PLAY"}
               position={new PIXI.Point(400, 240)}
               onClick={handleGameButtonOnClick}
             />
@@ -105,7 +107,7 @@ function App() {
               text={"HIGH SCORES"}
               position={new PIXI.Point(400, 360)}
               onClick={handleHighScoreOnClick}
-              isHighScore
+              isHighScore={true}
             />
             <CustomButton
               text={"EXIT"}
