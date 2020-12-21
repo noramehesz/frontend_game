@@ -2,18 +2,19 @@ import React, { useState, useEffect, useRef, Fragment } from "react";
 import "./App.css";
 import { Sprite, Stage, Container } from "react-pixi-fiber";
 import splash from "./images/space.png";
-import logo from "./images/logo.png"
+import logo from "./images/logo.png";
 import * as PIXI from "pixi.js";
 import { Background } from "./bgAnimation";
 import { CustomButton } from "./Button";
 import { Parallax } from "./ParallaxPlayground";
 import HighScores from "./HighScores";
+import Animate from "./context";
 
 export enum GameState {
   splashState = "splashState",
   menuState = "menuState",
   gameState = "gameState",
-  highScores = "highScores"
+  highScores = "highScores",
 }
 
 export type RocketType = {
@@ -64,12 +65,12 @@ function App() {
   };
 
   const handleHighScoreOnClick = () => {
-    setGameState(GameState.highScores)
-  }
+    setGameState(GameState.highScores);
+  };
 
   const handleBackButton = () => {
-    setGameState(GameState.menuState)
-  }
+    setGameState(GameState.menuState);
+  };
 
   const handleExit = () => {
     window.location.replace("http://www.google.com");
@@ -90,45 +91,47 @@ function App() {
           ></Sprite>
         )}
         {gameState === GameState.menuState && (
-          <Container>
-            <Background />
-            <Sprite 
-             texture={PIXI.Texture.from(logo)}
-              position={new PIXI.Point(400, 100)}
-              anchor={new PIXI.Point(0.5, 0.5)}
-              scale={new PIXI.Point(0.6, 0.6)}
-             />
-            <CustomButton
-              text={"PLAY"}
-              position={new PIXI.Point(400, 240)}
-              onClick={handleGameButtonOnClick}
-            />
-            <CustomButton
-              text={"HIGH SCORES"}
-              position={new PIXI.Point(400, 360)}
-              onClick={handleHighScoreOnClick}
-              isHighScore={true}
-            />
-            <CustomButton
-              text={"EXIT"}
-              position={new PIXI.Point(400, 480)}
-              onClick={handleExit}
-            />
-          </Container>
+          <Animate>
+            <Container>
+              <Background />
+              <Sprite
+                texture={PIXI.Texture.from(logo)}
+                position={new PIXI.Point(400, 100)}
+                anchor={new PIXI.Point(0.5, 0.5)}
+                scale={new PIXI.Point(0.6, 0.6)}
+              />
+              <CustomButton
+                text={"PLAY"}
+                position={new PIXI.Point(400, 240)}
+                onClick={handleGameButtonOnClick}
+              />
+              <CustomButton
+                text={"HIGH SCORES"}
+                position={new PIXI.Point(400, 360)}
+                onClick={handleHighScoreOnClick}
+                isHighScore={true}
+              />
+              <CustomButton
+                text={"EXIT"}
+                position={new PIXI.Point(400, 480)}
+                onClick={handleExit}
+              />
+            </Container>
+          </Animate>
         )}
         {gameState === GameState.gameState && (
           <Container interactive={true}>
             <Parallax setGameState={setGameState} />
           </Container>
         )}
-        {
-          gameState === GameState.highScores && (
+        {gameState === GameState.highScores && (
+          <Animate>
             <Container>
-              <Background/>
-              <HighScores backToMenuOnClick={handleBackButton}/>
+              <Background />
+              <HighScores backToMenuOnClick={handleBackButton} />
             </Container>
-          )
-        }
+          </Animate>
+        )}
       </Stage>
     </Fragment>
   );
