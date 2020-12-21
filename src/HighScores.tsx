@@ -20,7 +20,7 @@ export default function HighScores(props: HighScoresProps) {
   useEffect(() => {
     async function getScores() {
       const scoresFromDb: number[] = await get("highScore");
-      console.log(scoresFromDb)
+      console.log(scoresFromDb);
       if (scoresFromDb !== undefined) {
         setScores(scoresFromDb);
       }
@@ -41,6 +41,7 @@ export default function HighScores(props: HighScoresProps) {
       {scores.map((sc, idx) => {
         return (
           <Text
+            key={idx}
             text={`${idx + 1}. ${sc}`}
             position={new PIXI.Point(400, 120 + idx * 40)}
             anchor={new PIXI.Point(0.5, 0.5)}

@@ -32,16 +32,17 @@ export function Background(props: BgProps) {
       props: {};
       alpha: number;
     }>();
-    for (let i = 0; i < 150; i++) {
+    for (let i = 0; i < 50; i++) {
       state.push({ props: getStarProps(i), alpha: Math.random() });
     }
     setStarsArray(state);
+    
   }, [getStarProps]);
 
   return (
     <>
       {starsArray.map((element: any, index: number) => (
-        <Star props={element.props} idx={index} key={`star${index}`}></Star>
+        <Star props={element.props} idx={index + 50} key={`star${index}`}></Star>
       ))}
     </>
   );
